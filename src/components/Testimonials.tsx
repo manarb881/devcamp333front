@@ -13,21 +13,21 @@ import { useEffect, useState } from "react";
 const testimonials = [
   {
     id: "1",
-    name: "Emily Johnson",
+    name: "ONIL",
     role: "Fashion Enthusiast",
     content: "I've been shopping here for years and the quality never disappoints. Their customer service is exceptional and shipping is always fast!",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
   },
   {
     id: "2",
-    name: "Michael Chen",
+    name: "Organisation nationale de l'agricultures ",
     role: "Tech Reviewer",
     content: "As someone who reviews electronics for a living, I'm extremely impressed with the selection and quality. My new headphones exceeded expectations.",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
   },
   {
     id: "3",
-    name: "Sarah Williams",
+    name: "",
     role: "Interior Designer",
     content: "Their home decor collection is absolutely stunning. I've sourced numerous items for my clients and they're always thrilled with the results.",
     avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
@@ -99,7 +99,7 @@ export default function Testimonials() {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-md relative"
                   >
-                    <div className="absolute -top-4 -left-4 bg-blue-500 text-white p-3 rounded-full">
+                    <div className="absolute -top-4 -left-4 bg-primary text-white p-3 rounded-full">
                       <Quote size={20} />
                     </div>
                     

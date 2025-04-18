@@ -12,7 +12,7 @@ import { DataProvider } from "@/contexts/DataContext";
 import { AuthProvider } from "@/contexts/DataContext";
 // *** IMPORT THE NEW COMPONENT ***
 import AdminStatusSynchronizer from "@/components/AdminStatusSynchronizer"; // Adjust path if needed
-
+import './i18n';
 // Pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -29,7 +29,8 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminCustomers from "./pages/AdminCustomers";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
-import Pricing from "./pages/Pricing";
+import Pricing from "./pages/Pricing.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -67,8 +68,7 @@ const App = () => (
                     {/* Admin Dashboard Routes */}
                     <Route path="/admin" element={<AdminDashboard />}>
                       <Route index element={<AdminOverview />} />
-                      <Route path="orders" element={<AdminOrders />} />
-                      <Route path="customers" element={<AdminCustomers />} />
+
                     </Route>
 
                     <Route path="*" element={<NotFound />} />

@@ -4,11 +4,16 @@ import axios from "axios";
 // Product interface
 export interface Product {
   id: number;
+  sku_id: string;
   name: string;
   description: string;
   price: number;
   imageUrl: string;
-  category: string;
+}
+
+export interface Predictions {
+  name: string;
+  stock: number;
 }
 
 // OrderItem interface
@@ -19,7 +24,7 @@ export interface OrderItem {
   price: number;
 }
 
-// Order interface (only the fields we care about)
+// Order interface
 export interface Order {
   id: number;
   date: string;
@@ -29,15 +34,39 @@ export interface Order {
   customer: string;
 }
 
-// Simplified Customer interface: only id and name.
+// Customer interface
 export interface Customer {
   id: number;
   name: string;
 }
 
+interface StockPredictionPayload { // Renamed for clarity
+  product_id: number;
+  week_number: number; // Corrected from 'week'
+  month: number; // Added month
+  store_id: string;
+  total_price: number;
+  base_price: number;
+  is_featured_sku: boolean;
+  is_display_sku: boolean;
+}
+
+// Define an interface for the structure returned by the backend create endpoint
+interface StockPredictionResponse extends StockPredictionPayload {
+    id: number;
+    product: { // Assuming nested product data is returned
+        id: number;
+        name: string;
+    };
+    predicted_stock: number;
+    created_at: string; // Or Date if you parse it
+}
+
+
 interface DataContextType {
   products: Product[];
   orders: Order[];
+  predictions: Predictions[]; // This seems for the list view
   customers: Customer[];
   cart: OrderItem[];
   addProduct: (product: Omit<Product, "id">) => void;
@@ -51,8 +80,10 @@ interface DataContextType {
   updateOrderStatus: (orderId: number, status: string) => void;
   isAdmin: boolean;
   setIsAdmin: (value: boolean) => void;
+  // --- FIX: Update the signature to match actual payload ---
+  submitPrediction: (formData: StockPredictionPayload) => Promise<StockPredictionResponse>; // Use the specific payload and response types
+  // ---------------------------------------------------------
 }
-
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
@@ -61,16 +92,90 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [predictions, setPredictions] = useState<Predictions[]>([]);
 
-  // Fetch products from API
+  const apiClient = axios.create({
+    baseURL: 'http://localhost:8000/api',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  // Add auth token if available
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      apiClient.defaults.headers.common["Authorization"] = `Token ${token}`;
+    }
+  }, []);
+
+  // Fetch predictions with detailed logging
+  // Fetch predictions with detailed logging
+
+
+  // Fetch predictions
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      console.log("Starting fetchPredictions for /predictions/predictions/list/");
+      try {
+        console.log("Sending GET request to http://localhost:8000/api/predictions/predictions/list/");
+        const response = await axios.get('http://localhost:8000/api/predictions/predictions/list/', {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        console.log("Fetch predictions response:", {
+          status: response.status,
+          data: response.data,
+        });
+
+        if (!response.data.results || !Array.isArray(response.data.results)) {
+          console.warn("Response data.results is not an array:", response.data.results);
+          setPredictions([]);
+          return;
+        }
+
+        const mappedPredictions = response.data.results
+          .map((pred: any, index: number) => {
+            console.log(`Processing prediction ${index + 1}:`, pred);
+            if (!pred.product || !pred.product.name || pred.predicted_stock == null) {
+              console.warn(`Invalid prediction data at index ${index}:`, pred);
+              return null;
+            }
+            return {
+              name: pred.product.name,
+              stock: pred.predicted_stock,
+            };
+          })
+          .filter((pred: Predictions | null) => pred !== null) as Predictions[];
+
+        console.log("Mapped predictions:", mappedPredictions);
+        setPredictions(mappedPredictions);
+        console.log("Predictions state updated:", mappedPredictions);
+      } catch (error: any) {
+        console.error("Couldn't get predictions:", {
+          message: error.message,
+          response: error.response
+            ? {
+                status: error.response.status,
+                data: error.response.data,
+              }
+            : null,
+        });
+        setPredictions([]);
+      }
+    };
+    fetchPredictions();
+  }, []);
+
+  // Fetch products
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/api/products/") // API URL for products
+      .get("http://127.0.0.1:8000/api/products/")
       .then((response) => {
-        // Assuming response.data.results contains the products array
-        const updatedProducts = response.data.results.map((product: Product) => ({
-          ...product,
-          imageUrl: `http://127.0.0.1:8000${product.imageUrl}`,
+        const updatedProducts = response.data.results.map((product: any) => ({
+          id: product.id,
+          sku_id: product.sku_id,
+          name: product.name,
+          description: product.description,
+          price: product.price || 0,
+          imageUrl: `http://127.0.0.1:8000${product.imageUrl || ''}`,
         }));
         setProducts(updatedProducts);
         console.log("Fetched products:", updatedProducts);
@@ -79,9 +184,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         console.error("Failed to fetch products", err);
       });
   }, []);
-  
 
-  // Fetch orders from API with authentication
+  // Fetch orders
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
@@ -90,26 +194,21 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           headers: { Authorization: `Token ${token}` },
         })
         .then((response) => {
-          // Map the response to match our Order interface
-          const mappedOrders = response.data.results.map((order) => ({
+          const mappedOrders = response.data.results.map((order: any) => ({
             id: order.id,
-            // Convert created_at to a readable date ƒstring
             date: new Date(order.created_at).toLocaleDateString(),
             status: order.status,
             total: parseFloat(order.total_cost),
-            items: order.items.map((item) => ({
+            items: order.items.map((item: any) => ({
               id: item.id,
               price: parseFloat(item.price),
               quantity: item.quantity,
               productId: item.product.id,
             })),
-            // Combine first_name and last_name into customer name
             customer: `${order.first_name} ${order.last_name}`,
           }));
-
           setOrders(mappedOrders);
           console.log("Mapped orders:", mappedOrders);
-          // Update customers based on the mapped orders
           updateCustomerData(mappedOrders);
         })
         .catch((err) => {
@@ -120,15 +219,32 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Simplified updateCustomerData: only store unique customer names
+  // Submit prediction
+  // Inside your DataProvider component
+  const submitPrediction = async (formData: PredictionFormPayload): Promise<StockPredictionResponse> => { // Ensure correct types
+    const url = '/predictions/predictions/'; // Or your correct endpoint
+    console.log(`Submitting prediction POST to ${url}`, formData);
+    try {
+      const response = await apiClient.post<StockPredictionResponse>(url, formData); // Use the correct Response Type
+      console.log("API POST success response data:", response.data);
+
+      // ---> CRITICAL: Make sure you return the data directly <---
+      return response.data;
+
+    } catch (error: any) {
+      console.error(`submitPrediction POST to ${url} failed:`, error.response?.data || error.message);
+      // Rethrow for the component to handle
+      throw error;
+    }
+  };
+
+  // Update customer data
   const updateCustomerData = (orders: Order[]) => {
     const customerData: { [key: string]: Customer } = {};
-
     orders.forEach((order) => {
-      // Use the customer's full name as the key
       if (!customerData[order.customer]) {
         customerData[order.customer] = {
-          id: Object.keys(customerData).length + 1, // auto-increment id
+          id: Object.keys(customerData).length + 1,
           name: order.customer,
         };
       }
@@ -198,10 +314,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       date: new Date().toISOString().split("T")[0],
       status: "pending",
       total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-      customer: "Current User", // Replace with actual user data when available
+      customer: "Current User",
       items: [...cart],
     };
-
     setOrders([...orders, newOrder]);
     clearCart();
   };
@@ -227,8 +342,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       value={{
         products,
         orders,
-        cart,
+        predictions,
         customers,
+        cart,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -240,6 +356,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         updateOrderStatus,
         isAdmin,
         setIsAdmin,
+        submitPrediction,
       }}
     >
       {children}
@@ -255,9 +372,7 @@ export const useData = () => {
   return context;
 };
 
-
-// For example, in src/types/Profile.ts
-// src/types/User.ts (or wherever you keep your types)
+// Auth context (unchanged from your provided code)
 export interface NestedProfile {
   phone: string;
   address: string;
@@ -266,7 +381,7 @@ export interface NestedProfile {
   postal_code: string | null;
   country: string | null;
   is_admin: boolean;
-  profile_pic: string;  // The actual path to the image
+  profile_pic: string;
 }
 
 export interface UserMe {
@@ -278,87 +393,77 @@ export interface UserMe {
   profile: NestedProfile;
 }
 
-  // Add any additional fields expected from your API
+interface AuthContextProps {
+  isAuthenticated: boolean;
+  token: string | null;
+  profile: UserMe | null;
+  setToken: (token: string | null) => void;
+  setIsAuthenticated: (value: boolean) => void;
+  setProfile: (user: UserMe | null) => void;
+}
 
- // adjust the import path
-  
-  interface AuthContextProps {
-    isAuthenticated: boolean;
-    token: string | null;
-    profile: UserMe | null;
-    setToken: (token: string | null) => void;
-    setIsAuthenticated: (value: boolean) => void;
-    setProfile: (user: UserMe | null) => void;
-  }
-  
-  const AuthContext = createContext<AuthContextProps | undefined>(undefined);
-  
-  export function AuthProvider({ children }: { children: ReactNode }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [token, setToken] = useState<string | null>(null);
-  
-    // The profile that includes the nested "profile" object
-    const [profile, setProfile] = useState<UserMe | null>(null);
-  
-    useEffect(() => {
-      const storedToken = localStorage.getItem("authToken");
-      if (storedToken) {
-        setToken(storedToken);
-        setIsAuthenticated(true);
-      }
-    }, []);
-  
-    useEffect(() => {
-      const fetchProfile = async () => {
-        if (!token) {
-          console.log("No token available. Skipping profile fetch.");
-          setProfile(null);
-          return;
-        }
-  
-        try {
-          console.log("Fetching profile data in AuthContext...");
-          const response = await axios.get("http://127.0.0.1:8000/api/accounts/me/", {
-            headers: { Authorization: `Token ${token}` },
-          });
-          console.log("Profile fetched in AuthContext:", response.data);
-  
-          // Cast or assert to the UserMe type
-          setProfile(response.data as UserMe);
-        } catch (error: unknown) {
-          console.error("Error fetching profile in AuthContext:", error);
-          // For a 401 or invalid token scenario, handle it here
-        }
-      };
-  
-      if (isAuthenticated && token) {
-        fetchProfile();
-      }
-    }, [isAuthenticated, token]);
-  
-    return (
-      <AuthContext.Provider
-        value={{
-          isAuthenticated,
-          token,
-          profile,
-          setToken,
-          setIsAuthenticated,
-          setProfile,
-        }}
-      >
-        {children}
-      </AuthContext.Provider>
-    );
-  }
-  
-  export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-      throw new Error("useAuth must be used within an AuthProvider");
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserMe | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    if (storedToken) {
+      setToken(storedToken);
+      setIsAuthenticated(true);
     }
-    return context;
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) {
+        console.log("No token available. Skipping profile fetch.");
+        setProfile(null);
+        return;
+      }
+
+      try {
+        console.log("Fetching profile data in AuthContext...");
+        const response = await axios.get("http://127.0.0.1:8000/api/accounts/me/", {
+          headers: { Authorization: `Token ${token}` },
+        });
+        console.log("Profile fetched in AuthContext:", response.data);
+        setProfile(response.data as UserMe);
+      } catch (error: unknown) {
+        console.error("Error fetching profile in AuthContext:", error);
+      }
+    };
+
+    if (isAuthenticated && token) {
+      fetchProfile();
+    }
+  }, [isAuthenticated, token]);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        token,
+        profile,
+        setToken,
+        setIsAuthenticated,
+        setProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  
-  export { AuthContext };
-  
+  return context;
+}
+
+export { AuthContext };

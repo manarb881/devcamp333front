@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+const defaultTheme = require('tailwindcss/defaultTheme');
 
 export default {
   darkMode: ["class"],
@@ -18,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        aurora: ['Aurora', ...defaultTheme.fontFamily.sans],
+    },
+
       colors: {
         purple: {
           50: "#F5F3FF",
@@ -34,9 +39,10 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+// tailwind.config.js - temporary test
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: '#dea401', // Test with hex
+          foreground: '#111827', // Text color for contrast
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

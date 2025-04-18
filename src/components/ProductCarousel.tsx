@@ -1,162 +1,148 @@
-import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { useData, Product } from "@/contexts/DataContext"; // Adjust path if needed
-import { cn } from "@/lib/utils"; // Import cn if you use it
+import { useData, Product } from "@/contexts/DataContext";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// --- Configuration ---
 const SCROLL_SPEED_PIXELS_PER_FRAME = 0.5;
-const CARD_WIDTH_PX = 250;
+const CARD_WIDTH_PX = 220;
 const CARD_GAP_PX = 24;
 const CARD_TOTAL_WIDTH_PX = CARD_WIDTH_PX + CARD_GAP_PX;
 const CARD_IMAGE_HEIGHT_CLASS = "h-36";
 const CARD_CONTAINER_HEIGHT_CLASS = "h-auto";
-// --- End Configuration ---
 
 export default function ProductCarousel() {
-  const { products } = useData();
-  console.log("Products in Carousel Component:", products); // Log products on render
+  const { products, isLoading, error } = useData();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
 
-  const totalWidthOfOneSet = useMemo(() => {
-    const width = products && products.length > 0
-      ? products.length * CARD_TOTAL_WIDTH_PX
-      : 0;
-    // console.log("Calculated totalWidthOfOneSet:", width); // Optional log
-    return width;
-  }, [products]);
+  const totalWidthOfOneSet = useMemo(
+    () => (products?.length || 0) * CARD_TOTAL_WIDTH_PX,
+    [products]
+  );
 
   useEffect(() => {
-    const container = scrollRef.current; // Get ref value
-
-    // --- LOG 1: CONTAINER DIMENSIONS ---
-    // Log dimensions when effect runs (after render/update)
-    if (container) {
-       console.log(
-         `Carousel Effect RUNNING - Dimensions: scrollWidth=${container.scrollWidth}, clientWidth=${container.clientWidth}`
-       ); // <-- ADD THIS LOG HERE
-    } else {
-       console.log("Carousel Effect RUNNING - Container ref not ready yet.");
+    const container = scrollRef.current;
+    if (!container || isPaused || !products?.length || !totalWidthOfOneSet) {
+      animationFrameRef.current && cancelAnimationFrame(animationFrameRef.current);
+      return;
     }
-    // --- END LOG 1 ---
-
-    // Conditions to stop or not start the animation
-    if (isPaused || !container || !products || products.length === 0 || totalWidthOfOneSet === 0) {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      console.log("Carousel Effect: Conditions not met or paused, stopping/skipping animation start.");
-      return; // Exit the effect
-    }
-
-    // Main animation loop function
     const scroll = () => {
-      // Use current ref value inside loop
-      const currentContainer = scrollRef.current;
-      if (!currentContainer || isPaused) {
-          // Keep requesting frames even if paused, to resume later
-          animationFrameRef.current = requestAnimationFrame(scroll);
-          return; // Skip scrolling calculation if paused or ref lost
+      if (!container || isPaused) {
+        animationFrameRef.current = requestAnimationFrame(scroll);
+        return;
       }
-
-      let newScrollLeft = currentContainer.scrollLeft + SCROLL_SPEED_PIXELS_PER_FRAME;
-
-      if (newScrollLeft >= totalWidthOfOneSet) {
-        newScrollLeft = newScrollLeft - totalWidthOfOneSet;
-        currentContainer.scrollLeft = newScrollLeft; // Teleport
+      let newLeft = container.scrollLeft + SCROLL_SPEED_PIXELS_PER_FRAME;
+      if (newLeft >= totalWidthOfOneSet) {
+        container.scrollLeft = newLeft - totalWidthOfOneSet;
       } else {
-        currentContainer.scrollLeft = newScrollLeft; // Normal scroll
+        container.scrollLeft = newLeft;
       }
-
-      // --- LOG 2: SCROLLLEFT AFTER SETTING ---
-      console.log(`Scroll func: Set scrollLeft to ${currentContainer.scrollLeft.toFixed(2)}`); // <-- ADD THIS LOG HERE
-      // --- END LOG 2 ---
-
       animationFrameRef.current = requestAnimationFrame(scroll);
     };
-
-    // Start the animation
-    console.log("Carousel Effect: Starting animation loop.");
-     if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current); // Clear previous frame just in case
-     }
-     // Reset scroll position slightly if resuming from pause & potentially over-scrolled
-     if (container.scrollLeft >= totalWidthOfOneSet) {
-          container.scrollLeft = container.scrollLeft % totalWidthOfOneSet;
-     }
-     animationFrameRef.current = requestAnimationFrame(scroll);
-
-
-    // Cleanup function
+    animationFrameRef.current && cancelAnimationFrame(animationFrameRef.current);
+    if (container.scrollLeft >= totalWidthOfOneSet) {
+      container.scrollLeft %= totalWidthOfOneSet;
+    }
+    animationFrameRef.current = requestAnimationFrame(scroll);
     return () => {
-       console.log("Carousel Effect CLEANUP"); // Log cleanup
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
+      animationFrameRef.current && cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     };
-  }, [isPaused, products, totalWidthOfOneSet]); // Dependencies
+  }, [isPaused, products, totalWidthOfOneSet]);
 
-  // --- Handle loading or empty state ---
-  if (!products || products.length === 0) {
-    return <div className="py-8 text-center text-gray-500">Loading products...</div>;
-  }
+  const scrollAmount = CARD_TOTAL_WIDTH_PX * 2;
+  const handleScrollLeft = () => scrollRef.current?.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+  const handleScrollRight = () => scrollRef.current?.scrollBy({ left: scrollAmount, behavior: "smooth" });
 
-  const allProducts = [...products, ...products, ...products];
+  if (isLoading) return <div className="py-16 text-center text-gray-500">Loading products...</div>;
+  if (error)      return <div className="py-16 text-center text-red-500">Error loading data: {error}</div>;
+  if (!products?.length) return <div className="py-16 text-center text-gray-500">No products to display.</div>;
+
+  const allProductsToDisplay = [...products, ...products, ...products];
 
   return (
     <div
-      className={`relative overflow-hidden py-8 mt-100 ${CARD_CONTAINER_HEIGHT_CLASS}`}
+      className={`group relative overflow-hidden py-12 bg-white dark:bg-gray-900 ${CARD_CONTAINER_HEIGHT_CLASS}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-hidden whitespace-nowrap"
-      >
-        {allProducts.map((product: Product, index: number) => ( // Keep types for .tsx
-          <div
-            key={`${product.id}-${index}`}
-            className="flex-shrink-0 "
-            style={{ width: `${CARD_WIDTH_PX}px` }} 
-          >
-             <Link to={`/products/${product.id}`} className="block h-full group">
-              <Card className="h-full rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col">
-                 <div className={`${CARD_IMAGE_HEIGHT_CLASS} w-full overflow-hidden bg-gray-100 flex-shrink-0`}>
+      {/* Title */}
+      <div className="container mx-auto px-4 mb-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-gray-100">
+          Our Products
+        </h2>
+      </div>
+
+      {/* Carousel */}
+      <div ref={scrollRef} className="flex gap-6 overflow-x-hidden whitespace-nowrap scroll-smooth">
+        {allProductsToDisplay.map((product: Product, idx: number) => (
+          <div key={`${product.id}-${idx}`} className="flex-shrink-0" style={{ width: CARD_WIDTH_PX }}>
+            <Link
+              to={`/products/${product.id}`}
+              className="block h-full focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 rounded-lg"
+            >
+              <Card className="h-full rounded-lg shadow transition-shadow duration-300 hover:shadow-xl overflow-hidden flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <div className={`${CARD_IMAGE_HEIGHT_CLASS} w-full overflow-hidden bg-gray-100 dark:bg-gray-700`}>
                   <img
-                    src={product.imageUrl || "https://via.placeholder.com/250x150?text=No+Image"}
+                    src={product.imageUrl || "/placeholder.png"}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     loading="lazy"
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "https://via.placeholder.com/250x150?text=Image+Error";
-                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.png"; }}
                   />
                 </div>
-                <div className="p-3 flex flex-col flex-grow">
-                  <h4
-                    className="text-sm font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors"
-                    title={product.name}
-                  >
+                <div className="p-3 flex-grow flex items-center justify-center">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate text-center">
                     {product.name}
                   </h4>
-                  <p className="text-sm font-bold text-indigo-700 mt-auto pt-1">
-                    ${Number(product.price).toFixed(2)}
-                  </p>
                 </div>
               </Card>
             </Link>
           </div>
         ))}
       </div>
-       {/* Optional: Edge fades */}
-       <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-10" />
-       <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-10" />
+
+      {/* Left Fade */}
+      <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none z-10" />
+      {/* Right Fade */}
+      <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none z-10" />
+
+      {/* Arrows */}
+      <button
+        onClick={handleScrollLeft}
+        aria-label="Scroll Left"
+        className="
+          absolute left-4 top-1/2 -translate-y-1/2 z-20
+          w-12 h-12 bg-white/80 dark:bg-gray-800/80
+          hover:bg-white/100 dark:hover:bg-gray-800/100
+          backdrop-blur-sm rounded-full
+          flex items-center justify-center
+          shadow-lg hover:shadow-2xl
+          transition transform hover:scale-110
+          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900
+        "
+      >
+        <ChevronLeft className="w-6 h-6 text-gray-800 dark:text-gray-100" />
+      </button>
+
+      <button
+        onClick={handleScrollRight}
+        aria-label="Scroll Right"
+        className="
+          absolute right-4 top-1/2 -translate-y-1/2 z-20
+          w-12 h-12 bg-white/80 dark:bg-gray-800/80
+          hover:bg-white/100 dark:hover:bg-gray-800/100
+          backdrop-blur-sm rounded-full
+          flex items-center justify-center
+          shadow-lg hover:shadow-2xl
+          transition transform hover:scale-110
+          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900
+        "
+      >
+        <ChevronRight className="w-6 h-6 text-gray-800 dark:text-gray-100" />
+      </button>
     </div>
   );
 }

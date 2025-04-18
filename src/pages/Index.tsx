@@ -1,92 +1,64 @@
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-//import ProductCarousel from "@/components/ProductCarousel";
-import  { useState} from "react";
 import { Contact } from "@/components/Contact";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
-import {Newsletter} from "@/components/Newsletter";
-import { PromoBanner } from "@/components/PromoBanner";
+import { Newsletter } from "@/components/Newsletter";
+import PromoBanner from "@/components/PromoBanner";
 import Testimonials from "@/components/Testimonials";
 import { GradientCarousel } from "@/components/GradientCarousel";
 import ProductCarousel from "@/components/ProductCarousel";
+import Hero from"@/components/Hero.tsx";
 
+// Placeholder SVG Blob Shapes
+const Blob1 = () => (
+  <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="100%">
+    <path
+      fill="#DBEAFE"
+      d="M428,296.5Q418,343,385.5,381Q353,419,301.5,433.5Q250,448,199.5,440Q149,432,101.5,400Q54,368,41.5,309Q29,250,43.5,195.5Q58,141,100.5,97.5Q143,54,196.5,35.5Q250,17,300.5,31Q351,45,390,81.5Q429,118,441.5,184Q454,250,428,296.5Z"
+    ></path>
+  </svg>
+);
 
-// --- Feature Icons (Placeholder - Replace with your actual icons) ---
-const PlaceholderIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>;
-// --- End Feature Icons ---
+const Blob2 = () => (
+  <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="100%">
+    <path
+      fill="#C7D2FE"
+      d="M423.1,311.3Q396.3,372.6,342.1,414.3Q287.9,456,224.9,441.9Q161.9,427.8,109.5,399.2Q57.1,370.6,42.3,310.3Q27.5,250,55.3,199.9Q83.1,149.8,124.5,106.9Q165.9,64,221.9,48.6Q277.9,33.2,337.4,57.9Q396.9,82.6,428.5,138.8Q460.1,195,449.9,252.5Q439.7,310,423.1,311.3Z"
+    ></path>
+  </svg>
+);
+
+const PlaceholderIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+  </svg>
+);
 
 const Index = () => {
   const features = [
-    // ... (your features array remains the same) ...
-     {
-      icon: <PlaceholderIcon />, title: "Dark/Light Mode", description: "...", link: "#",
-    },
-    {
-      icon: <PlaceholderIcon />, title: "Authentication", description: "...", link: "/auth",
-    },
-    {
-      icon: <PlaceholderIcon />, title: "Rich Text Editor", description: "...", link: "/rich-text-editor",
-    },
-    {
-      icon: <PlaceholderIcon />, title: "QR Code Generator", description: "...", link: "/qr-generator",
-    },
-    {
-      icon: <PlaceholderIcon />, title: "AI Integration", description: "...", link: "#",
-    },
-    {
-      icon: <PlaceholderIcon />, title: "Shadcn UI", description: "...", link: "https://ui.shadcn.com/",
-    },
+    { icon: <PlaceholderIcon />, title: "Dark/Light Mode", description: "...", link: "#" },
+    { icon: <PlaceholderIcon />, title: "Authentication", description: "...", link: "/auth" },
+    { icon: <PlaceholderIcon />, title: "Rich Text Editor", description: "...", link: "/rich-text-editor" },
+    { icon: <PlaceholderIcon />, title: "QR Code Generator", description: "...", link: "/qr-generator" },
+    { icon: <PlaceholderIcon />, title: "AI Integration", description: "...", link: "#" },
+    { icon: <PlaceholderIcon />, title: "Shadcn UI", description: "...", link: "https://ui.shadcn.com/" },
   ];
 
-  // ---- Intersection Observer Hooks ----
-  const sectionOptions = {
-    triggerOnce: true,
-    threshold: 0.1, // Start animation when 10% of the section is visible
-  };
-  // --- Staggered Animation Options for Cards ---
-  const cardAnimationOptions = {
-    duration: 500, // Duration for each card animation (in ms)
-    delayIncrement: 100, // Delay increment between cards (in ms)
-  };
-  // --- End Staggered Options ---
-
-
+  const sectionOptions = { triggerOnce: true, threshold: 0.1 };
   const { ref: productsRef, inView: productsInView } = useInView(sectionOptions);
-  // Keep useInView for the features section container to trigger the card animations
-
   const { ref: TestimonialsRef, inView: TestimonialsInView } = useInView(sectionOptions);
-  const { ref: ctaRef, inView: ctaInView } = useInView(sectionOptions);
-  const [isForm,setIsform]=useState("false")
 
-  // --- Re-use the slow animation classes for other sections ---
   const sectionAnimationClasses = "transition-all duration-[2000ms] ease-in-out delay-300";
   const sectionHiddenStateClasses = "opacity-0 translate-y-10";
   const sectionVisibleStateClasses = "opacity-100 translate-y-0";
-  // ---
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
-      {/* --- Hero Section (unchanged) --- */}
-      <section className="relative pt-24 pb-20 md:pt-32 md:pb-28">
-        <div className="container-custom">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl animate-fadeIn">
-              <span className="text-primary">AGRoyal</span> 
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-2xl animate-slideUp">
-              Your ultimate solution for stock prediction ...
-            </p>
-            <div className="mt-10 flex flex-wrap gap-4 justify-center animate-slideUp" style={{ animationDelay: "0.2s" }}>
-              <Button size="lg" asChild><Link to="/#predict">Predict Now</Link></Button>
-              <Button size="lg" variant="outline" asChild><a href="/auth/login" target="_blank" rel="noopener noreferrer">Sign </a></Button>
-            </div>
-          </div>
-        </div>
-      </section>
- 
-      {/* --- Productes Section (using slow animation) --- */}
+      <Hero />
+
       <section
         ref={productsRef}
         className={cn(
@@ -96,29 +68,12 @@ const Index = () => {
         )}
       >
         <div className="container-custom">
-          {/* ... product carousel content ... */}
-            <div className="text-center mb-12">
-                
-                
-            </div>
-            
+          <ProductCarousel />
         </div>
       </section>
 
-      
-     {/* products carousel  */ }
-     
-     
+      <PromoBanner id="predict" />
 
-
-      {/* --- Features Section (Container triggers staggered cards) --- */}
-   
-      <PromoBanner id="predict"></PromoBanner>
-      {/* --- Contact Section (using slow animation) --- */}
-      <ProductCarousel></ProductCarousel>
-
-
-      {/* --- Testimonials Section (using slow animation) --- */}
       <section
         ref={TestimonialsRef}
         className={cn(
@@ -126,15 +81,11 @@ const Index = () => {
           sectionAnimationClasses,
           TestimonialsInView ? sectionVisibleStateClasses : sectionHiddenStateClasses
         )}
-       >
-      
-      <Testimonials></Testimonials>
+      >
+        <Testimonials />
       </section>
 
-
-      {/* --- CTA Section (using slow animation) --- */}
-
-      <Newsletter></Newsletter>
+      <Newsletter />
     </div>
   );
 };

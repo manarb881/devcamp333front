@@ -95,7 +95,7 @@ export default function Profile() {
     formData.append("profile_pic", profilePic);
 
     setIsUploading(true);
-    setLoading(true);
+    setLoading(true); // Keep loading true during upload process
 
     try {
       await axios.post(`${BACKEND_BASE_URL}/api/accounts/profile-pic/`, formData, {
@@ -104,6 +104,7 @@ export default function Profile() {
           Authorization: `Token ${token}`,
         },
       });
+      // Re-fetch profile to get updated pic URL
       const response = await axios.get(`${BACKEND_BASE_URL}/api/accounts/me/`, {
         headers: { Authorization: `Token ${token}` },
       });
@@ -120,7 +121,7 @@ export default function Profile() {
       alert("Failed to upload profile picture. Please try again.");
     } finally {
       setIsUploading(false);
-      setLoading(false);
+      setLoading(false); // Set loading false after upload attempt
     }
   };
 
@@ -140,7 +141,7 @@ export default function Profile() {
     ? `${BACKEND_BASE_URL}${profile.profile.profile_pic}`
     : null;
 
-  // Current date for header
+  // Current date for header - Although not used in the visible part here
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "short",
     day: "2-digit",
@@ -149,9 +150,11 @@ export default function Profile() {
   });
 
   return (
-    <div className=" min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex mt-20">
+    // --- CHANGE HERE: Removed mt-20 ---
+    <div className=" min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex w-[80%]">
       {/* Sidebar */}
       <div className="w-16 bg-white shadow-md flex flex-col items-center py-6 space-y-6">
+        {/* Sidebar content... */}
         <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
           <div className="w-4 h-4 grid grid-cols-2 gap-1">
             <div className="bg-white rounded-sm"></div>
@@ -172,6 +175,7 @@ export default function Profile() {
       </div>
 
       {/* Main Content */}
+      {/* --- KEPT mt-10 here for spacing above the card --- */}
       <div className="flex-1 p-6 mt-10">
         {/* Profile Section */}
         <Card className="max-w-3xl mx-auto bg-white rounded-xl shadow-md animate-slideUp">
@@ -186,7 +190,7 @@ export default function Profile() {
                     <div className="h-4 w-60 bg-gray-200 rounded"></div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="h-10 bg-gray-200 rounded"></div>
                   <div className="h-10 bg-gray-200 rounded"></div>
                   <div className="h-10 bg-gray-200 rounded"></div>
@@ -197,15 +201,19 @@ export default function Profile() {
               </div>
             ) : profile ? (
               <>
-            <div >
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Welcome, <span className="text-purple-500">{profile?.first_name || profile?.username || "User"}</span>
-            </h1>
-            </div>
+                {/* Welcome Message */}
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    Welcome, <span className="text-primary">{profile?.first_name || profile?.username || "User"}</span>
+                  </h1>
+                </div>
+                <Separator className="my-4" /> {/* Added Separator for visual structure */}
+
                 {/* Profile Picture and Info */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="relative group">
-                    <Avatar className="w-10 h-16 border-2 border-gray-200">
+                    {/* --- Adjusted Avatar size slightly --- */}
+                    <Avatar className="w-16 h-16 border-2 border-gray-200">
                       {imageSrc && !imageError ? (
                         <AvatarImage
                           src={imageSrc}
@@ -215,7 +223,7 @@ export default function Profile() {
                         />
                       ) : (
                         <AvatarFallback className="bg-gray-200 text-gray-600">
-                          {profile?.username?.charAt(0)?.toUpperCase() || <User size={24} />}
+                          {profile?.username?.charAt(0)?.toUpperCase() || <User size={32} />} {/* Increased icon size */}
                         </AvatarFallback>
                       )}
                     </Avatar>
@@ -242,7 +250,7 @@ export default function Profile() {
                     </h2>
                     <p className="text-sm text-gray-600">{profile.email}</p>
                   </div>
-                  <Button className="ml-auto bg-blue-500 hover:bg-blue-600 text-white rounded-md">
+                  <Button className="ml-auto bg-gray-900 hover:bg-blue-600 text-white rounded-md">
                     Edit
                   </Button>
                 </div>
@@ -253,7 +261,7 @@ export default function Profile() {
                     <Button
                       onClick={handleUpload}
                       disabled={isUploading}
-                      className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+                      className="bg-primary hover:bg-blue-600 text-white flex items-center gap-2"
                       size="sm"
                     >
                       {isUploading ? (
@@ -277,54 +285,84 @@ export default function Profile() {
                 )}
 
                 {/* Profile Fields */}
+                {/* --- Adjusted field labels and input structure slightly --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
-                    <Label className="text-sm text-gray-600">Company Name</Label>
+                    <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">Company Name</Label>
                     <Input
+                      id="companyName"
                       value={
-                        profile.first_name || profile.last_name
-                          ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
-                          : "Your First Name"
+                        // Assuming company name might come from profile, else placeholder
+                        profile?.profile?.company_name || "N/A"
                       }
-                      className="mt-1 border-gray-300 rounded-md text-gray-500 italic"
+                      className="mt-1 border-gray-300 rounded-md text-gray-700 bg-gray-50" // Slightly styled disabled input
                       disabled
+                      readOnly // Better practice for disabled fields
                     />
                   </div>
-
+                   <div>
+                    <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={ profile.first_name || "Not Set" }
+                      className="mt-1 border-gray-300 rounded-md text-gray-700 bg-gray-50"
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                   <div>
+                    <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={ profile.last_name || "Not Set"}
+                      className="mt-1 border-gray-300 rounded-md text-gray-700 bg-gray-50"
+                      disabled
+                      readOnly
+                    />
+                  </div>
 
                   <div className="relative">
-                    <Label className="text-sm text-gray-600">Country</Label>
+                     {/* --- Assuming country might come from profile --- */}
+                    <Label htmlFor="country" className="text-sm font-medium text-gray-700">Country</Label>
                     <Input
-                      value="Your First Name"
-                      className="mt-1 border-gray-300 rounded-md text-gray-500 italic"
+                      id="country"
+                      value={ profile?.profile?.country || "Not Set" }
+                      className="mt-1 border-gray-300 rounded-md text-gray-700 bg-gray-50 pr-8" // Added padding-right for icon
                       disabled
+                      readOnly
                     />
-                    <ChevronDown className="absolute right-3 top-9 h-4 w-4 text-gray-400" />
+                    <ChevronDown className="absolute right-3 top-8 h-5 w-5 text-gray-400" /> {/* Adjusted position slightly */}
                   </div>
-
                 </div>
+
+                <Separator className="my-4" /> {/* Added Separator */}
 
                 {/* Email Section */}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">My email Address</h3>
-                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
-                    <Mail className="h-5 w-5 text-blue-500" />
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{profile.email}</p>
-                      <p className="text-xs text-gray-500">1 month ago</p>
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">My Email Address</h3> {/* Slightly larger heading */}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border border-gray-200"> {/* Added gap, padding, border */}
+                    <Mail className="h-5 w-5 text-blue-500 flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                    <div className="flex-1 min-w-0"> {/* Added min-w-0 for potential overflow */}
+                      <p className="text-sm font-medium text-gray-900 truncate">{profile.email}</p> {/* Added font-medium and truncate */}
+                      {/* Example: Displaying last login or added date if available */}
+                      {/* <p className="text-xs text-gray-500">Added: {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : 'N/A'}</p> */}
+                      <p className="text-xs text-gray-500">Primary</p>
                     </div>
+                    {/* Optional: Add a button to verify or make primary */}
+                    {/* <Button variant="ghost" size="sm" className="text-blue-600">Verify</Button> */}
                   </div>
                   <Button
                     variant="outline"
-                    className="mt-2 text-blue-500 border-blue-500 hover:bg-blue-50"
+                    className="mt-3 text-primary border-primary hover:bg-blue-50 flex items-center gap-2" /* Adjusted styling */
                   >
-                    + Add Email Address
+                    <Mail size={16} /> {/* Added Icon */}
+                    Add Email Address
                   </Button>
                 </div>
               </>
             ) : (
               <p className="text-center text-gray-500 animate-fade-in">
-                Could not load profile data.
+                Could not load profile data. Please try logging in again.
               </p>
             )}
           </CardContent>

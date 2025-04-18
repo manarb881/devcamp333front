@@ -42,7 +42,7 @@ export function Newsletter() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-blue-600 hover:bg-blue-700 py-3 px-8 rounded-full font-semibold flex items-center justify-center gap-2"
+              className="bg-primary hover:bg-blue-700 py-3 px-8 rounded-full font-semibold flex items-center justify-center gap-2"
               type="submit"
             >
               Subscribe <Send size={16} />

@@ -1,10 +1,15 @@
+/* src/app/globals.css (or your main CSS file) */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* Define LIGHT THEME variables in :root */
   :root {
-    --background: 210 40% 98%;
+    /* Keep your original light theme variables here */
+    /* Example using default shadcn light: */
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -13,7 +18,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262 83% 58%;
+    /* You might have had purple here before */
+    --primary: 222.2 47.4% 11.2%; /* Default shadcn primary */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -22,57 +28,85 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
+    --ring: 222.2 84% 4.9%; /* Default shadcn ring */
 
     --radius: 0.5rem;
   }
 
+  /* Define DARK THEME variables within the .dark selector */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* === Dark Theme Colors (Gray 900 + Gold Accent) === */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Backgrounds */
+    --background: 222 47% 11%;   /* gray-900 */
+    --foreground: 210 40% 98%;   /* Almost white text */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Cards & Popovers */
+    --card: 217 33% 17%;         /* Slightly lighter dark gray (like gray-800) */
+    --card-foreground: 210 40% 98%; /* Text on cards */
+    --popover: 217 33% 17%;       /* Popover background */
+    --popover-foreground: 210 40% 98%; /* Text on popovers */
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary Accent (Gold Color) */
+/* Inside .dark { ... } or :root */
+    --primary: 45 99% 44%;       /* HSL for #dea401 */
+    --primary-foreground: 222 47% 11%; /* HSL for dark text like gray-900 */
+    /* Secondary Elements (Subtle Grays) */
+    --secondary: 215 28% 25%;    /* Darker gray (like gray-700) */
+    --secondary-foreground: 210 40% 98%; /* Text on secondary */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Muted Elements (Very Subtle Grays) */
+    --muted: 216 21% 35%;        /* Even darker gray (like gray-600/700) */
+    --muted-foreground: 215 20% 65%; /* Lighter gray text */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 199 89% 48%;
+    /* Accent (Hover states - can use a darker gold or subtle gray) */
+    /* Option 1: Subtle Gray Hover */
+    --accent: 215 28% 25%;       /* Same as secondary for subtle hover */
     --accent-foreground: 210 40% 98%;
+    /* Option 2: Darker Gold Hover (Adjust saturation/lightness) */
+    /* --accent: 45 80% 38%; */
+    /* --accent-foreground: 210 40% 98%; */ /* Text on accent */
 
-    --destructive: 0 62.8% 30.6%;
+
+    /* Destructive Actions */
+    --destructive: 0 72% 51%; /* Slightly adjusted red for dark */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 262 83% 58%;
+    /* Borders & Inputs */
+    --border: 217 33% 27%;      /* Dark gray border (like gray-700) */
+    --input: 217 33% 27%;       /* Input background/border */
+    --ring: 45 99% 44%;         /* Focus Ring - Gold Primary */
+
+    /* Radius should be consistent, usually defined in :root */
+    /* --radius: 0.5rem; */
   }
 }
 
+/* Base body styles (Apply regardless of theme) */
 @layer base {
   * {
-    border-color: hsl(var(--border)); /* Applique la couleur de bordure globale */
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    /* font settings */
   }
+}
+
+@font-face {
+  font-family: 'Aurora';
+  src: url('/fonts/aurora.woff2') format('woff2'),
+       url('/fonts/aurora.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
 }
 
 @layer utilities {
