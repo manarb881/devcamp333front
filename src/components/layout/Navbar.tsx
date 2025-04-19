@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Link, useLocation } from "react-router-dom";
 import React, { useState, useEffect, useContext, useMemo, ReactNode } from "react"; // Import React
-import { LayoutDashboard, MessageCircle, Settings as SettingsIcon } from "lucide-react"; // Added SettingsIcon
+// **** Import SettingsIcon ****
+import { LayoutDashboard, MessageCircle, Settings as SettingsIcon } from "lucide-react";
 import axios from "axios";
 import { AuthContext, useData } from "@/contexts/DataContext";
 
@@ -38,8 +39,9 @@ export function Navbar() {
 
   // --- Dynamically create navigation links based on admin status ---
   const navLinks: NavLink[] = useMemo(() => {
-    const links: NavLink[] = [...baseNavLinks];
+    const links: NavLink[] = [...baseNavLinks]; // Start with base links
 
+    // ***** START SWAP *****
     // Add Settings first
     links.push({
         name: "Settings",
@@ -55,9 +57,10 @@ export function Navbar() {
         icon: <LayoutDashboard className="h-4 w-4" />,
       });
     }
+    // ***** END SWAP *****
 
     return links;
-  }, [isAdmin]);
+  }, [isAdmin]); // Recalculate only if isAdmin changes
 
   // Profile Picture Logic
   const profilePicUrl =
@@ -88,6 +91,7 @@ export function Navbar() {
           {navLinks.map((link) => {
             let isActive;
             // Handle nested routes for active state
+            // Make sure this covers all base paths correctly
             if (link.path === "/admin" || link.path === "/settings") {
                isActive = location.pathname.startsWith(link.path);
             } else {
@@ -114,8 +118,7 @@ export function Navbar() {
 
         {/* Auth, Theme Toggle Section */}
         <div className="hidden md:flex items-center space-x-4">
-          {/* ... (auth/theme content - no changes needed here) ... */}
-           {isAuthenticated ? (
+          {isAuthenticated ? (
             <>
               <Link to="/profile" className="flex items-center space-x-2 hover:text-primary">
                 <img
@@ -139,17 +142,16 @@ export function Navbar() {
 
         {/* Mobile Menu Trigger */}
         <div className="flex items-center md:hidden space-x-2">
-           {/* ... (messages/theme content - no changes needed here) ... */}
             {isAuthenticated && ( <Link to="/messages" className="relative text-foreground/70 hover:text-primary" title="Messages"><MessageCircle className="h-5 w-5" />{newMessagesCount > 0 && ( <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">{newMessagesCount}</span> )}</Link> )}
            <ThemeToggle />
            <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMenu} aria-label="Toggle Menu">
+             {/* Icons remain the same */}
              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isMenuOpen ? "hidden" : "block"}><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isMenuOpen ? "block" : "hidden"}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
           </Button>
         </div>
 
         {/* Mobile Menu Panel */}
-        {/* === CHECK THIS SECTION === */}
         {isMenuOpen && (
           <div
              className="
@@ -159,9 +161,7 @@ export function Navbar() {
                border-t border-border                      // Top border separation
                shadow-lg rounded-b-lg                      // Visual styling
                animate-fadeIn                              // Animation class
-               bg-background                               // ** Ensure this provides a VISIBLE background **
-               dark:bg-gray-800                            // ** Explicit dark mode background for testing **
-               bg-white                                      // ** Explicit light mode background for testing **
+               bg-background                               // Use theme background
              "
           >
             <div className="flex flex-col space-y-2">
@@ -178,9 +178,8 @@ export function Navbar() {
                      <Link
                          key={`mobile-${link.name}`}
                          to={link.path}
-                         // Pass toggleMenu directly to onClick to ensure it closes
-                         onClick={toggleMenu}
-                         className={`flex items-center gap-2 text-base font-medium px-3 py-2 rounded-md transition-colors hover:bg-muted ${isActive ? "text-primary bg-secondary" : "text-foreground/90"}`} // Use slightly more opaque text
+                         onClick={toggleMenu} // Close menu on click
+                         className={`flex items-center gap-2 text-base font-medium px-3 py-2 rounded-md transition-colors hover:bg-muted ${isActive ? "text-primary bg-secondary" : "text-foreground/90"}`}
                      >
                        {/* Ensure icon is valid, consistent size, prevent shrinking */}
                        {link.icon && React.isValidElement(link.icon) && React.cloneElement(link.icon as React.ReactElement, { className: "h-5 w-5 flex-shrink-0" })}
@@ -189,7 +188,7 @@ export function Navbar() {
                   )
                 }
               )}
-              <div className="border-t border-border my-2"></div> {/* Use border-border */}
+              <div className="border-t border-border my-2"></div>
               {/* Mobile Auth links */}
               {isAuthenticated ? (
                  <Link
@@ -218,7 +217,6 @@ export function Navbar() {
             </div>
           </div>
         )}
-         {/* === END CHECK === */}
 
       </div>
     </nav>

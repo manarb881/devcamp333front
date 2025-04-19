@@ -96,7 +96,7 @@ const HeroSection = () => {
           className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-shadow-md"
         >
           Grow More<br />
-          <span className="  ">Know More , <span className="font-aurora h-2 text-amber-400"> Earne More</span></span>
+          <span className="  ">Know More , <span className="font-aurora h-2 text-amber-400"> Earn More</span></span>
         </motion.h1>
 
         {/* Animated Subtitle Container */}
