@@ -137,7 +137,7 @@ export function Navbar() {
               <Link to="/auth/login"> <Button variant="outline" size="sm">Sign In</Button> </Link>
               <Link to="/auth/signup"> <Button size="sm">Sign Up</Button> </Link>
             </>
-          )}a
+          )}
         </div>
 
         {/* Mobile Menu Trigger */}
