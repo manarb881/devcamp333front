@@ -7,12 +7,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 // --- Predefined Fallback Product Data ---
 // Add your desired fallback products here, matching the Product interface
 const predefinedProducts: Product[] = [
-    { id: "predef-1", name: "Fresh Milk", imageUrl: "/placeholders/milk.jpg" },
-    { id: "predef-2", name: "Artisan Cheddar", imageUrl: "/placeholders/cheese.jpg" },
-    { id: "predef-3", name: "Greek Yogurt", imageUrl: "/placeholders/yogurt.jpg" },
-    { id: "predef-4", name: "Organic Butter", imageUrl: "/placeholders/butter.jpg" },
-    { id: "predef-5", name: "Cream Cheese", imageUrl: "/placeholders/cream-cheese.jpg" },
-    { id: "predef-6", name: "Ice Cream Base", imageUrl: "/placeholders/ice-cream.jpg" },
+    { id: "predef-1", name: "Fresh Milk", imageUrl: "/gruyere.jpg" },
+    { id: "predef-2", name: "Artisan Cheddar", imageUrl: "/Danone.jpg" },
+    { id: "predef-3", name: "Greek Yogurt", imageUrl: "/agro.jpg" },
+    { id: "predef-4", name: "Organic Butter", imageUrl: "/cheese.jpg" },
+
     // Add more as needed
 ];
 // Make sure the placeholder image paths (e.g., /placeholders/milk.jpg) exist in your public folder
