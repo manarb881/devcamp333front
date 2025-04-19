@@ -7,10 +7,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 // --- Predefined Fallback Product Data ---
 // Add your desired fallback products here, matching the Product interface
 const predefinedProducts: Product[] = [
-    { id: "predef-1", name: "Fresh Milk", imageUrl: "/gruyere.jpg" },
-    { id: "predef-2", name: "Artisan Cheddar", imageUrl: "/Danone.jpg" },
+    { id: "predef-1", name: "Fresh cheese", imageUrl: "/gruyere.jpg" },
+    { id: "predef-2", name: "Artisan Milkr", imageUrl: "/Danone.jpg" },
     { id: "predef-3", name: "Greek Yogurt", imageUrl: "/agro.jpg" },
-    { id: "predef-4", name: "Organic Butter", imageUrl: "/cheese.jpg" },
+    { id: "predef-4", name: "Organic cheese", imageUrl: "/cheese.jpg" },
 
     // Add more as needed
 ];
