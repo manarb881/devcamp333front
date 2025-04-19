@@ -102,7 +102,7 @@ export function Navbar() {
                <Link
                  key={link.name}
                  to={link.path}
-                 className={`relative text-sm font-medium transition-colors hover:text-primary pb-1 flex items-center gap-1 ${
+                 className={`relative text-lg font-medium transition-colors hover:text-primary pb-1 flex items-center gap-1 ${
                    isActive
                      ? "text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-primary"
                      : "text-foreground/70"
@@ -137,7 +137,7 @@ export function Navbar() {
               <Link to="/auth/login"> <Button variant="outline" size="sm">Sign In</Button> </Link>
               <Link to="/auth/signup"> <Button size="sm">Sign Up</Button> </Link>
             </>
-          )}
+          )}a
         </div>
 
         {/* Mobile Menu Trigger */}
