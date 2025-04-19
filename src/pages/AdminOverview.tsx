@@ -1,4 +1,4 @@
-import React from "react"; // useEffect, useMemo no longer needed here directly for this purpose
+import React, { useEffect } from "react"; // useEffect, useMemo no longer needed here directly for this purpose
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useData } from "@/contexts/DataContext"; // Use the hook to get context data/functions
 import {
@@ -77,8 +77,11 @@ const AdminOverview = () => {
       icon: <TrendingUp className="h-6 w-6 text-white" />,
     },
   ];
-  // --- End Data Processing ---
-
+  // --- End Dat  
+  useEffect(()=>{
+   console.log("we are here ")
+  },[]
+  )
 
   // --- Handle Refresh Click ---
   const handleRefresh = () => {
@@ -166,7 +169,7 @@ const AdminOverview = () => {
                                 {metric.description}
                             </CardDescription>
                             {/* Ensure value exists or show placeholder */}
-                            <CardTitle className="text-3xl font-bold mt-1 text-white">{metric.value || 'N/A'}</CardTitle>
+                            <CardTitle className="text-3xl font-bold mt-1 text-white">{metric.value || '0'}</CardTitle>
                         </div>
                         <div className="p-3 rounded-full bg-white/20">{metric.icon}</div>
                     </div>

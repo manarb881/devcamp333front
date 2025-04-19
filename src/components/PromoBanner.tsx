@@ -264,7 +264,7 @@ const PromoBanner = () => {
           <div className="mt-10 p-6 bg-gray-800/50 border border-amber-500/30 rounded-lg text-center shadow-lg animate-fadeIn">
             <h3 className="text-xl font-semibold mb-3 text-amber-400">Prediction Result</h3>
             <p className="text-5xl font-bold mb-3 text-white">{predictionResult}</p>
-            <p className="text-base text-gray-400 mb-6">(Estimated Units Needed)</p>
+            <p className="text-base text-gray-400 mb-6">(Estimated Units Over the next Week )</p>
             <Button
               onClick={handleGoToDashboard}
               variant="outline" // Use outline style for secondary action
